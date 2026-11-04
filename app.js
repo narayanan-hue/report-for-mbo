@@ -178,10 +178,13 @@ function render(mon) {
   const r4 = ytd.map(x => [x.c, x.l, x.s, growth(x.s, x.l)]);
   table('tbl4', ['Store', 'LY', 'CY', 'GROWTH%'], ['name', 'n', 'n', 'gr'], r4, [1, 2], grD);
 
-  // 5. current month target (the selected month)
-  const r5 = [...new Set((DB.targets[mkey(mon)] || []).map(r => r[0]))].map(c => [c, target(mon, c)]);
+  // 5. current month target (the selected month) + LY same-month sale + last month sale
+  const prev = MONTHS.indexOf(mon) > 0 ? MONTHS[MONTHS.indexOf(mon) - 1] : null;   // Apr has no previous month in this FY
+  const r5 = [...new Set((DB.targets[mkey(mon)] || []).map(r => r[0]))]
+    .map(c => [c, target(mon, c), sale(DB.ly, mon, c), prev ? sale(DB.cy, prev, c) : 0]);
   const T5 = r5.reduce((s, r) => s + r[1], 0);
-  table('tbl5', ['store name', 'target'], ['name', 'n'], r5, [1]);
+  table('tbl5', ['store name', 'target', `LY ${mon} sale`, `${prev || 'Last month'} sale`],
+        ['name', 'n', 'n', 'n'], r5, [1, 2, 3]);
 
   // Titles (template names + period)
   document.getElementById('t1').textContent = `Month-wise — ${mon}`;
